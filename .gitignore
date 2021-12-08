@@ -1,1 +1,3 @@
 /__pycache__
+/mediapipe/keypoints
+/mediapipe/PoseVideo

@@ -3,19 +3,28 @@ import mediapipe as mp
 import numpy as np
 import json
 import time
+import os
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 mp_holistic = mp.solutions.holistic
 mp_drawing_styles = mp.solutions.drawing_styles
 
-# 캠
-cap = cv2.VideoCapture(0)
+
+#
+key_path = "keypoints"
+video_path = "PoseVideo"
+target_video = "jjc.mp4"
+
+cap = cv2.VideoCapture(os.path.join(video_path, target_video))
+os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
 
 # Curl counter variables
 warning = False
 count = 0
 pTime = 0
+sTime = time.time()
+
 
 # Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -141,6 +150,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].visibility,
         ]
 
+        time_stamp = str(time.time() - sTime)
+
         # save keypoints
         keypoints = {
             "1. left_hip": left_hip,
@@ -160,8 +171,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             "26. right_eye": right_eye,
             "27. left_ear": left_ear,
             "28. right_ear": right_ear,
+            "time stamp": time_stamp,
         }
-        with open("keypoint.json", "w") as f:
+
+        with open(os.path.join(key_path, target_video, time_stamp), "w") as f:
             json.dump(keypoints, f, indent=4)
 
         mp_drawing.draw_landmarks(
