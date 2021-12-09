@@ -9,14 +9,17 @@ import numpy as np
 
 UPLOAD = 'upload video'
 WEBCAM = 'filmed with webcam'
-MUSIC_OPTIONS = ['call me baby', 'next level']
-SIDEBAR_OPTIONS = [UPLOAD, WEBCAM]
+SAVE_WEBCAM = 'saved webcam'
+MUSIC_OPTIONS = ['call me baby', 'next level','Fire']
+SIDEBAR_OPTIONS = [UPLOAD, WEBCAM, SAVE_WEBCAM]
 
 
 def show_video(music_name):
     video_file = open(music_name, 'rb')
     video_bytes = video_file.read()
     st.video(video_bytes, format="video/mp4", start_time=0)
+
+
 
 #TODO 비디오 mediapipe
 def upload_video():
@@ -26,7 +29,9 @@ def upload_video():
         # bytes_data = uploaded_file.getvalue()
         # st.write(bytes_data)
 
-# TODO 웹캠 mediaipe, 스머프고치기
+
+
+# TODO 웹캠 mediaipe
 def upload_webcam():
     run = st.checkbox('Start/Stop Webcam')
     if run:
@@ -37,12 +42,13 @@ def upload_webcam():
 
         while(camera.isOpened()):
             ret, frame = camera.read()
+            out.write(frame)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             FRAME_WINDOW.image(frame)
-            out.write(frame)
 
         camera.release()
         out.release()
+
 
 
 def main():
@@ -50,8 +56,8 @@ def main():
     with st.expander("사용설명서"):
         st.write('1. 추고싶은 노래를 선택')
         st.write('2. 평가 방식을 선택 '
-                 '\n  - 웹캠 선택 시 실시간으로 웹캠으로 촬영 후 평가 '
-                 '\n  - 업로드 선택시 동영상 업로드 후 평가 ')
+                '\n  - 웹캠 선택 시 실시간으로 웹캠으로 촬영 후 평가 '
+                '\n  - 업로드 선택시 동영상 업로드 후 평가 ')
         st.write('3. 평가받기 버튼 클릭')
 
     st.sidebar.title("Dancing Pose")
