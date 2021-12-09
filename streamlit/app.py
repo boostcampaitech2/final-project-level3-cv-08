@@ -28,13 +28,22 @@ def upload_video():
 
 # TODO 웹캠 mediaipe
 def upload_webcam():
-    run = st.checkbox('Start Webcam')
-    FRAME_WINDOW = st.image([])
-    camera = cv2.VideoCapture(0)
-    while run:
-        _, frame = camera.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        FRAME_WINDOW.image(frame)
+    run = st.checkbox('Start/Stop Webcam')
+    if run:
+        FRAME_WINDOW = st.image([])
+        camera = cv2.VideoCapture(0)
+        fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+        out = cv2.VideoWriter('./dataset/save.mp4', fourcc, 25.0, (640, 480))
+
+        while(camera.isOpened()):
+            ret, frame = camera.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            FRAME_WINDOW.image(frame)
+            out.write(frame)
+
+        camera.release()
+        out.release()
+
 
 def main():
     #사용 설명
