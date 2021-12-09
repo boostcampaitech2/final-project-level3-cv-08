@@ -26,7 +26,7 @@ def upload_video():
         # bytes_data = uploaded_file.getvalue()
         # st.write(bytes_data)
 
-# TODO 웹캠 mediaipe
+# TODO 웹캠 mediaipe, 스머프고치기
 def upload_webcam():
     run = st.checkbox('Start/Stop Webcam')
     if run:
