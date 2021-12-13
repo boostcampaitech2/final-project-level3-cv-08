@@ -10,14 +10,13 @@ mp_pose = mp.solutions.pose
 mp_holistic = mp.solutions.holistic
 mp_drawing_styles = mp.solutions.drawing_styles
 
-
 #
-key_path = "keypoints"
-video_path = "PoseVideo"
-target_video = "jjc.mp4"
+key_path = "save_json"
+video_path = "keypoints"
+target_video = "swf2test.mp4"
 
-# cap = cv2.VideoCapture(os.path.join(video_path, target_video))
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(os.path.join(video_path, target_video))
+# cap = cv2.VideoCapture(0)
 os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
 
 # Curl counter variables
@@ -25,14 +24,17 @@ warning = False
 count = 0
 pTime = 0
 sTime = time.time()
-
+FPS = cap.get(cv2.CAP_PROP_FPS)
 
 # Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+    i=0
     while cap.isOpened():
         ret, frame = cap.read()
-        resize_frame = cv2.resize(frame, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_LINEAR)
-
+        
+        # get frame time and FPS
+        frame_time=cap.get(cv2.CAP_PROP_POS_MSEC)
+        resize_frame = cv2.resize(frame, None, fx=1, fy=1, interpolation=cv2.INTER_LINEAR)
         # Recolor image to RGB
         image = cv2.cvtColor(resize_frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
@@ -45,8 +47,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         # Extract landmarks
-        landmarks = results.pose_landmarks.landmark
-
+        try :
+            landmarks = results.pose_landmarks.landmark
+        except : 
+            continue
         # Get coordinate
         left_hip = [
             landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
@@ -152,7 +156,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         ]
 
         time_stamp = str(time.time() - sTime)
-
+        
         # save keypoints
         keypoints = {
             "1. left_hip": left_hip,
@@ -172,12 +176,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             "26. right_eye": right_eye,
             "27. left_ear": left_ear,
             "28. right_ear": right_ear,
-            "time stamp": time_stamp,
+            "time stamp": frame_time,
         }
-
-        # with open(os.path.join(key_path, target_video, time_stamp), "w") as f:
-        #     json.dump(keypoints, f, indent=4)
-
+        
+        with open(os.path.join(key_path, target_video, f'{i:0>3}.json'), "w") as f:
+            json.dump(keypoints, f, indent=4)
+        i=i+1
         mp_drawing.draw_landmarks(
             image,
             results.pose_landmarks,
@@ -190,6 +194,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         fps = 1 / (cTime - pTime)
         pTime = cTime
 
+
         cv2.putText(image, str(int(fps)), (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 0), 3)
 
         cv2.imshow("Mediapipe Feed", image)
@@ -198,4 +203,4 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             break
 
     cap.release()
-    # cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
