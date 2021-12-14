@@ -10,10 +10,9 @@ mp_pose = mp.solutions.pose
 mp_holistic = mp.solutions.holistic
 mp_drawing_styles = mp.solutions.drawing_styles
 
-#
 key_path = "save_json"
 video_path = "keypoints"
-target_video = "swf2test.mp4"
+target_video = "hot_prac.mp4"
 
 cap = cv2.VideoCapture(os.path.join(video_path, target_video))
 # cap = cv2.VideoCapture(0)

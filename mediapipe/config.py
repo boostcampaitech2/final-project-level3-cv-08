@@ -1,53 +1,5 @@
-import cv2
-import mediapipe as mp
-import numpy as np
-import json
-import time
-import os
 
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
-mp_holistic = mp.solutions.holistic
-mp_drawing_styles = mp.solutions.drawing_styles
-
-
-#
-key_path = "keypoints"
-video_path = "PoseVideo"
-target_video = "jjc.mp4"
-
-# cap = cv2.VideoCapture(os.path.join(video_path, target_video))
-cap = cv2.VideoCapture(0)
-os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
-
-# Curl counter variables
-warning = False
-count = 0
-pTime = 0
-sTime = time.time()
-
-
-# Setup mediapipe instance
-with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-    while cap.isOpened():
-        ret, frame = cap.read()
-        resize_frame = cv2.resize(frame, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_LINEAR)
-
-        # Recolor image to RGB
-        image = cv2.cvtColor(resize_frame, cv2.COLOR_BGR2RGB)
-        image.flags.writeable = False
-
-        # Make detection
-        results = pose.process(image)
-
-        # Recolor back to BGR
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-        # Extract landmarks
-        landmarks = results.pose_landmarks.landmark
-
-        # Get coordinate
+def make_keypoints(landmarks, mp_pose, video_inform):
         left_hip = [
             landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
             landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y,
@@ -150,11 +102,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].z,
             landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].visibility,
         ]
-
-        time_stamp = str(time.time() - sTime)
-
-        # save keypoints
-        keypoints = {
+        
+        return {
             "1. left_hip": left_hip,
             "2. left_knee": left_knee,
             "3. left_ankle": left_ankle,
@@ -172,30 +121,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             "26. right_eye": right_eye,
             "27. left_ear": left_ear,
             "28. right_ear": right_ear,
-            "time stamp": time_stamp,
+            "time stamp": video_inform['video_fps'],
         }
-
-        # with open(os.path.join(key_path, target_video, time_stamp), "w") as f:
-        #     json.dump(keypoints, f, indent=4)
-
-        mp_drawing.draw_landmarks(
-            image,
-            results.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
-            mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2),
-        )
-
-        cTime = time.time()
-        fps = 1 / (cTime - pTime)
-        pTime = cTime
-
-        cv2.putText(image, str(int(fps)), (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 0), 3)
-
-        cv2.imshow("Mediapipe Feed", image)
-        #'q'누르면 캠 꺼짐
-        if cv2.waitKey(10) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    # cv2.destroyAllWindows()
+        
