@@ -89,6 +89,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         if y0<0: y0=0
         if x1>1: x1=1
         if y1>1: y1=1
+        
+        video_inform['gt_bbox'] = [x0,y0,x1,y1]
+        with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
+            json.dump(video_inform, f, indent='\t')
             
         i=i+1
         
@@ -98,9 +102,5 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         if cv2.waitKey(10) & 0xFF == ord("q"):
             break
         
-    video_inform['gt_bbox'] = [x0,y0,x1,y1]
-    
-    with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
-        json.dump(video_inform, f, indent='\t')
     cap.release()
     cv2.destroyAllWindows()

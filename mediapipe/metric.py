@@ -28,8 +28,8 @@ connect_point = [[1,2,3], #왼쪽다리
                  [6,7,8], #오른쪽다리
                  [14,15,16], #왼쪽팔
                  [19,20,21], # 오른쪽팔
-                 [28,26,24,25,27],# 눈코입
-                 [1,6,19,14,1]] #몸통
+                 [1,6,19,14,1],
+                 [28,26,24,25,27]]# 눈코입] #몸통
 
 vec_point = [[1,2],[2,3], #왼쪽다리
              [6,7],[7,8], #오른쪽다리
@@ -43,6 +43,12 @@ vec_part = {'left_leg' : [[1,2],[2,3]], #왼쪽다리
             'left_arm' : [[14,15],[15,16]], #왼쪽팔
             'right_arm': [[19,20],[20,21]], # 오른쪽팔
             'body' : [[6,14],[1,19]]} #몸통
+
+color_map = {
+    'fast': (255,69,0),
+    'slow': (138,43,226),
+    'good': (0,255,0)
+    }
 
 class VideoMetric():
     def __init__(self, width, height):
@@ -154,7 +160,7 @@ class VideoMetric():
         return output #left_leg, right_leg, left_arm, right_arm, body    
     
 
-    def visual(self, point_json, connect_point = connect_point, info_dict = info_dict, save = False):
+    def visual(self, point_json, connect_point = connect_point, info_dict = info_dict):
         '''
         keypoint -> numpy skeleton image
         
@@ -168,7 +174,7 @@ class VideoMetric():
                 cv2.line(img, (int(point[p][0]*self.width), int(point[p][1]*self.height)), (int(point[q][0]*self.width), int(point[q][1]*self.height)), (0, 0, 0), 3)
         return img
 
-    def visual_back(self,frame, point_json, connect_point = connect_point, info_dict = info_dict, save = False):
+    def visual_back(self,frame, point_json, connect_point = connect_point, info_dict = info_dict):
         '''
         keypoint -> numpy skeleton image
         
@@ -180,6 +186,21 @@ class VideoMetric():
                 p = info_dict[parts[i]]
                 q = info_dict[parts[i+1]]
                 cv2.line(img, (int(point[p][0]*self.width), int(point[p][1]*self.height)), (int(point[q][0]*self.width), int(point[q][1]*self.height)), (0, 0, 0), 3)
+        return img
+    
+    def visual_back_color(self,frame, point_json, speed_metric, connect_point = connect_point, info_dict = info_dict):
+        '''
+        keypoint -> numpy skeleton image
+        '''
+        point = list(point_json.values())
+        img = frame
+        for i, parts in enumerate(connect_point):
+            if i==5: c = (0,0,0)
+            else : c = color_map[speed_metric[i]]
+            for i in range(len(parts)-1):
+                p = info_dict[parts[i]]
+                q = info_dict[parts[i+1]]
+                cv2.line(img, (int(point[p][0]*self.width), int(point[p][1]*self.height)), (int(point[q][0]*self.width), int(point[q][1]*self.height)), c, 3)
         return img
 
 def compare_visual(background, gt_size, prac_size, gt_keypoints, prac_keypoints, connect_point = connect_point, info_dict = info_dict):
