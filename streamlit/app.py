@@ -6,13 +6,14 @@ import yaml
 import time
 import pandas as pd
 import numpy as np
+from datetime import datetime
+import pyautogui
 
 UPLOAD = 'upload video'
 WEBCAM = 'filmed with webcam'
-SAVE_WEBCAM = 'saved webcam'
 MUSIC_OPTIONS = ['call me baby', 'next level','Fire']
-SIDEBAR_OPTIONS = [UPLOAD, WEBCAM, SAVE_WEBCAM]
-
+SIDEBAR_OPTIONS = [UPLOAD, WEBCAM]
+now = datetime.now()
 
 def show_video(music_name):
     video_file = open(music_name, 'rb')
@@ -33,8 +34,22 @@ def upload_video():
 
 # TODO 웹캠 mediaipe
 def upload_webcam():
+    now = datetime.now()
     run = st.checkbox('Start/Stop Webcam')
     if run:
+        pyautogui.keyDown('shift')
+        pyautogui.keyDown('tab')
+        pyautogui.keyDown('tab')
+        pyautogui.keyDown('tab')
+        pyautogui.keyDown('tab')
+        pyautogui.keyDown('tab')
+        pyautogui.keyDown('tab')
+        pyautogui.keyUp('shift')
+        pyautogui.keyUp('tab')
+        pyautogui.keyDown('space')
+        pyautogui.keyUp('space')
+
+        st.text(f"Start time is {now.hour}:{now.minute}:{now.second}.")
         FRAME_WINDOW = st.image([])
         camera = cv2.VideoCapture(0)
         fourcc = cv2.VideoWriter_fourcc(*'DIVX')
