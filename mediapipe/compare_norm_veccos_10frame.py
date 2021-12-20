@@ -94,7 +94,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             # body part별로(왼다리, 오른다리, 왼팔, 오른팔, 몸통) normalize된 값 vector 추출
             prac = hot_prac.extract_vec_norm_by_small_part(keypoints)
-            
+            displace_prac = hot_prac.extract_vec_norm_by_small_part_diff(hot_prac_temp[0],keypoints)
             total = [[] for _ in range(len(prac)+1)]
             for j in range(s_p,e_p,1):
                 with open(f'save_json/hot_gt.mp4/{j:0>4}.json') as json_file:
