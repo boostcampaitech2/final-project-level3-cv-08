@@ -8,17 +8,6 @@ import metric
 import config
 import argparse
 import matplotlib.pyplot as plt
-# gt_bbox 추가 필요
-
-
-# args 정의
-# parser = argparse.ArgumentParser()
-
-# parser.add_argument('--key_path', type=int, default="save_json")
-# parser.add_argument('--video_path', type=str, default="keypoints")
-# parser.add_argument('--target_video', type=str, default="hot_prac.mp4")
-
-# args = parser.parse_args()
 
 pTime = 0
 sTime = time.time()
@@ -59,11 +48,9 @@ hot_prac = metric.VideoMetric(video_inform['frame_width'],video_inform['frame_he
 
 # gt와 비교할 Frame 수 선정
 compare_frame = 10
-# x0,y0,x1,y1 = gt_inform['gt_bbox']
-# gt_bbox = [x0*gt_resize[0],y0*gt_resize[1],x1*gt_resize[0],y1*gt_resize[1]]
+before_frame = 5
+hot_prac_temp = []
 
-# speed_metric = ["good","good","good","good","good","good"]
-# Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     i=0
     while cap.isOpened():
@@ -92,35 +79,40 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         # Get coordinate
         
         # save keypoints
+        
         keypoints = config.make_keypoints(landmarks, mp_pose, video_inform)
+        if len(hot_prac_temp)>before_frame:
+            hot_prac_temp = hot_prac_temp[1:]
+        hot_prac_temp.append(keypoints)
+        
         with open(f'save_json/hot_gt.mp4/{i:0>4}.json') as json_file:
             hot_gt_json = json.load(json_file)
-        
-        with open(os.path.join(key_path, target_video, f'{i:0>4}.json'), "w") as f:
-            json.dump(keypoints, f, indent='\t')
-        
-        # gt와 비교 구간, target 1개 frame 시점에 대해서 앞뒤로 'compare_frame' 수 만큼의 gt frame과 비교하여 최고점 추출 및 박자 확인
         
         if i%(compare_frame*2) == compare_frame or i==0:
             s_p = max(i-compare_frame,0) # start point
             e_p = min(i+compare_frame, gt_inform['total_frame']) # end point
-            
+
             # body part별로(왼다리, 오른다리, 왼팔, 오른팔, 몸통) normalize된 값 vector 추출
-            prac = hot_prac.extract_vec_norm_by_part(keypoints)
-            total = [[],[],[],[],[],[]]
+            prac = hot_prac.extract_vec_norm_by_small_part(keypoints)
+            
+            total = [[] for _ in range(len(prac)+1)]
             for j in range(s_p,e_p,1):
                 with open(f'save_json/hot_gt.mp4/{j:0>4}.json') as json_file:
                     hot_gt_temp = json.load(json_file)
-                gt = hot_gt.extract_vec_norm_by_part(hot_gt_temp)
+                b_j = max(0,j-10)
+                with open(f'save_json/hot_gt.mp4/{b_j:0>4}.json') as json_file:
+                    bhot_gt_temp = json.load(json_file)
+                gt = hot_gt.extract_vec_norm_by_small_part(hot_gt_temp)
                 s = 0
-                for part in range(5):
-                    temp = metric.l2_normalize(gt[part], prac[part])
-                    total[part].append(temp) # l2_normalize로 비교
+                for part in range(len(prac)):
+                    temp = metric.cosine_similar(gt[part], prac[part])
+                    total[part].append(temp)
                     s+=temp
-                total[5].append(s)
+                total[-1].append(s)
             speed_metric = []
-            for part in range(6):
-                good_point = np.argmin(total[part])
+            
+            for part in range(len(prac)+1):
+                good_point = np.argmax(total[part])
                 if good_point-compare_frame+5>0: speed_metric.append("fast")
                 elif good_point-compare_frame+5<0: speed_metric.append("slow")
                 else : speed_metric.append("good")
@@ -131,13 +123,9 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         
         image = cv2.hconcat([gt_image,prac_image])
         l=len(total[0])//2
-        cv2.putText(image, f"speed  : {speed_metric[5]}", (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-        cv2.putText(image, f"left_leg  : {total[0][l]:0.2f}_{speed_metric[0]}", (10, 60), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-        cv2.putText(image, f"right_leg : {total[1][l]:0.2f}_{speed_metric[1]}", (10, 90), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-        cv2.putText(image, f"left_arm  : {total[2][l]:0.2f}_{speed_metric[2]}", (10, 120), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-        cv2.putText(image, f"right_arm : {total[3][l]:0.2f}_{speed_metric[3]}", (10, 150), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-        cv2.putText(image, f"body      : {total[4][l]:0.2f}_{speed_metric[4]}", (10, 180), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)        
-        
+        cv2.putText(image, f"speed  : {speed_metric[-1]}", (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+        for txt in range(len(speed_metric)-1):
+            cv2.putText(image, f"{metric.small_name[txt]} : {total[0][txt]:0.2f}_{speed_metric[txt]}", (10, 60+30*txt), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2) 
         i=i+1
         
         cv2.imshow("Mediapipe Feed", image)
