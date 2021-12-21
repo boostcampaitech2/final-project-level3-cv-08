@@ -9,7 +9,7 @@ import numpy as np
 from webcam import webcam_pose
 from config import click_video
 from compare import compare_video
-# from compare import video_compare
+
 
 UPLOAD = 'upload video'
 WEBCAM = 'filmed with webcam'

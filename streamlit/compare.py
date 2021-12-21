@@ -68,13 +68,13 @@ def compare_video():
 
             # Recolor image to RGB
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image.flags.writeable = False
+            # image.flags.writeable = False
             # Make detection
             results = pose.process(image)
 
             # Recolor back to BGR
             image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
             # Extract landmarks
             try:
@@ -138,7 +138,6 @@ def compare_video():
             # cv2.imshow("Mediapipe Feed", image)
             FRAME_WINDOW.image(image)
             out.write(image)
-
             # 'q'누르면 캠 꺼짐
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
