@@ -7,6 +7,13 @@ import os
 import metric
 import config
 import streamlit as st
+import imutils
+
+
+#TODO opencv frame 크기 키우기
+#TODO 이미지 크기 gt에 맞추기
+#TODO 영상 저장되게 하기
+#TODO 음악 이름에 따라 결과 도출할 수 있게 경로 설정
 
 
 def compare_video():
@@ -57,14 +64,16 @@ def compare_video():
         i = 0
         while cap.isOpened():
             ret, frame = cap.read()
-            print(ret)
+
             if ret == False:
                 break
+
             if i == 300:
                 break
 
             # get frame time and FPS
             frame_time = cap.get(cv2.CAP_PROP_POS_MSEC)
+
 
             # Recolor image to RGB
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

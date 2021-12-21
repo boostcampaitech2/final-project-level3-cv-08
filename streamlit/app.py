@@ -39,9 +39,9 @@ def upload_video(music_name):
                 compare_video()
                 time.sleep(30)
                 # st.header("당신의 댄스 실력은")
-                video_file = open('./dataset/result/' + music_name + '.mp4', 'rb')
-                video_bytes = video_file.read()
-                st.video(video_bytes, format="video/mp4", start_time=0)
+                # video_file = open('./dataset/result/' + music_name + '.mp4', 'rb')
+                # video_bytes = video_file.read()
+                # st.video(video_bytes, format="video/mp4", start_time=0)
 
 #웹탬으로 촬영 후 폴더 에 저장
 def upload_webcam(music_name):
@@ -65,9 +65,8 @@ def upload_webcam(music_name):
         camera.release()
         out.release()
 
-
 def main():
-    # st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide")
 
     #사용 설명
     with st.sidebar.expander("사용설명서"):
@@ -75,7 +74,7 @@ def main():
         st.write('2. 평가 방식을 선택 '
                  '\n  - 웹캠 선택 시 실시간으로 웹캠으로 촬영 후 평가 '
                  '\n  - 업로드 선택시 동영상 업로드 후 평가 ')
-        st.write('3. 평가받기 버튼 클릭')
+        # st.write('3. 평가받기 버튼 클릭')
 
     st.sidebar.title("Dancing Pose")
 
@@ -103,8 +102,8 @@ def main():
     #         #평가 되는 동안 wait
     #         with st.spinner('Wait...'):
     #             time.sleep(5)
-    #             # TODO score return 받기
     #             score = 100
     #             st.subheader(str(score) + "점")
+
 if __name__ == "__main__":
     main()
