@@ -38,7 +38,7 @@ def upload_video(music_name):
             with st.spinner('Wait...'):
                 compare_video()
                 time.sleep(30)
-                st.header("당신의 댄스 실력은")
+                # st.header("당신의 댄스 실력은")
                 video_file = open('./dataset/result/' + music_name + '.mp4', 'rb')
                 video_bytes = video_file.read()
                 st.video(video_bytes, format="video/mp4", start_time=0)
@@ -70,7 +70,7 @@ def main():
     # st.set_page_config(layout="wide")
 
     #사용 설명
-    with st.expander("사용설명서"):
+    with st.sidebar.expander("사용설명서"):
         st.write('1. 추고싶은 노래를 선택')
         st.write('2. 평가 방식을 선택 '
                  '\n  - 웹캠 선택 시 실시간으로 웹캠으로 촬영 후 평가 '

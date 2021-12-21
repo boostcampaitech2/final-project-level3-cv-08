@@ -6,6 +6,7 @@ import json
 import os
 import metric
 import config
+import streamlit as st
 
 
 def compare_video():
@@ -13,7 +14,7 @@ def compare_video():
     mp_pose = mp.solutions.pose
 
     # 경로 설정
-    key_path = "dataset/json/"
+    key_path = "./dataset/json/"
     video_path = "./datast/target/"
     gt_path = "hope_gt.mp4"
     target_video = "hope_tg.mp4"
@@ -22,9 +23,10 @@ def compare_video():
     os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
 
     # video 불러오기 및 video 설정 저장
+    FRAME_WINDOW = st.image([])
     # cap = cv2.VideoCapture(os.path.join(video_path, target_video))
     cap = cv2.VideoCapture('./dataset/target/hope_tg.mp4')
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     fps = cap.get(cv2.CAP_PROP_FPS)
     out = cv2.VideoWriter("./dataset/result/hope.mp4", fourcc, fps, (640, 480))
 
@@ -55,8 +57,10 @@ def compare_video():
         i = 0
         while cap.isOpened():
             ret, frame = cap.read()
-            out.write(frame)
-            if ret is False:
+            print(ret)
+            if ret == False:
+                break
+            if i == 300:
                 break
 
             # get frame time and FPS
@@ -132,10 +136,8 @@ def compare_video():
             i = i + 1
 
             # cv2.imshow("Mediapipe Feed", image)
+            FRAME_WINDOW.image(image)
             out.write(image)
-
-            if i == 500:
-                break
 
             # 'q'누르면 캠 꺼짐
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -143,5 +145,3 @@ def compare_video():
 
         cap.release()
         cv2.destroyAllWindows()
-
-compare_video()
