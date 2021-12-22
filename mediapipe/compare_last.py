@@ -70,7 +70,7 @@ def compare_video(music_name):
     
     prac_resize = (int(video_inform['frame_width']*gt_inform['frame_height']/video_inform['frame_height']), gt_inform['frame_height'])
     gt_video = metric.VideoMetric(gt_inform['frame_width'],gt_inform['frame_height'])
-    prac_video = metric.VideoMetric(video_inform['frame_width'],video_inform['frame_height'])   
+    prac_video = metric.VideoMetric(prac_resize[0],prac_resize[1])   
     
 
     # gt와 비교할 Frame 수 선정
@@ -91,11 +91,11 @@ def compare_video(music_name):
             if ret is False: break
             
             # get frame time and FPS
-            frame_time=cap.get(cv2.CAP_PROP_POS_MSEC)
-            resize_frame = cv2.resize(frame, None, fx=1, fy=1, interpolation=cv2.INTER_LINEAR)
+            # frame_time=cap.get(cv2.CAP_PROP_POS_MSEC)
+            resize_frame = cv2.resize(frame, dsize=prac_resize, fx=1, fy=1, interpolation=cv2.INTER_LINEAR)
             
             # Recolor image to RGB
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image = cv2.cvtColor(resize_frame, cv2.COLOR_BGR2RGB)
             image.flags.writeable = False
 
             # Make detection
@@ -170,6 +170,7 @@ def compare_video(music_name):
             prac_image = prac_video.visual_back_color(image, keypoints, eval_metric)
             gt_image = gt_video.visual_back_color(array, gt_json, eval_metric)
             
+            print(prac_image.shape,gt_image.shape)
             image = cv2.hconcat([gt_image,prac_image])
             
             # l=compare_frame
@@ -194,4 +195,4 @@ def compare_video(music_name):
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":      
-    compare_video('hot')
+    compare_video('hotbb')

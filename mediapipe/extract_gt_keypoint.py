@@ -30,7 +30,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # 경로 설정
 key_path = "save_json"
 video_path = "keypoints"
-target_video = "hot_prac2.mp4"
+target_video = "hotbb_gt.mp4"
 
 # video 정보 저장 파일 생성
 os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
