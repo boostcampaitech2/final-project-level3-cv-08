@@ -10,6 +10,9 @@ from webcam import webcam_pose
 from config import click_video
 from compare import compare_video
 
+url = 'http://fastapi:8000'
+endpoint = '/app'
+
 
 UPLOAD = 'upload video'
 WEBCAM = 'filmed with webcam'

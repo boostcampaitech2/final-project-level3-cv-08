@@ -7,6 +7,7 @@ import os
 import metric
 import config
 import streamlit as st
+from PIL import Image
 import imutils
 
 
@@ -14,10 +15,11 @@ import imutils
 #TODO 이미지 크기 gt에 맞추기
 #TODO 영상 저장되게 하기
 #TODO 음악 이름에 따라 결과 도출할 수 있게 경로 설정
+#TODO 매트릭 그래프 띄우기
 
 
 def compare_video():
-
+    sample =cv2.imread('./dataset/sample.jpg')
     mp_pose = mp.solutions.pose
 
     # 경로 설정
@@ -83,7 +85,7 @@ def compare_video():
 
             # Recolor back to BGR
             image.flags.writeable = True
-            # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
             # Extract landmarks
             try:
@@ -136,6 +138,11 @@ def compare_video():
             prac_image = hot_prac.visual_back_color(image, keypoints, speed_metric)
             gt_image = hot_gt.visual_back_color(array, hot_gt_json, speed_metric)
 
+            sample = cv2.resize(sample, dsize=(20, 20), interpolation=cv2.INTER_AREA)
+            x = keypoints['28. right_ear'][0] * prac_image.shape[1]
+            y = keypoints['28. right_ear'][1] * prac_image.shape[0]
+            prac_image[int(y)-5:int(y)+15, int(x)-5:int(x)+15] = sample
+
             image = cv2.hconcat([gt_image, prac_image])
             l = len(total[0]) // 2
             cv2.putText(image, f"speed  : {speed_metric[-1]}", (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
@@ -144,7 +151,8 @@ def compare_video():
                             (10, 60 + 30 * txt), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
             i = i + 1
 
-            # cv2.imshow("Mediapipe Feed", image)
+            cv2.imshow("Mediapipe Feed", image)
+
             FRAME_WINDOW.image(image)
             out.write(image)
             # 'q'누르면 캠 꺼짐
@@ -153,3 +161,4 @@ def compare_video():
 
         cap.release()
         cv2.destroyAllWindows()
+compare_video()
