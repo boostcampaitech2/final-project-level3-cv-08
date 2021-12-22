@@ -3,3 +3,8 @@
 /mediapipe/PoseVideo
 save_json
 back
+save_image
+.json
+.jpg
+.jpeg
+.mp4

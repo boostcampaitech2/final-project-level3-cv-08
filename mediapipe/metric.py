@@ -69,21 +69,35 @@ small_parts = {
 
 small_name = list(small_parts.keys())
 
-vec_part_key = ['left_leg', 'right_leg', 'left_arm', 'right_arm', 'body', 'total']
-
+vec_part_key = ['left thigh',
+                 'left calf',
+                 'right thigh',
+                 'right calf',
+                 'left arm',
+                 'left forearm',
+                 'right arm',
+                 'right forearm',
+                 'body1',
+                 'body2']
 sigma = {
-"left_leg": [0.087, 0.089], 
-"right_leg":[0.087, 0.089],
-"left_arm": [0.072, 0.062], 
-"right_arm":[0.072, 0.062],
-"body":[0.079,0.079] #shoulder
+        'left thigh':0.087,
+        'left calf':0.089,
+        'right thigh':0.087,
+        'right calf':0.089,
+        'left arm':0.072,
+        'left forearm':0.062,
+        'right arm':0.072,
+        'right forearm':0.062,
+        'body1':0.079,
+        'body2':0.079
 }
 
 color_map = {
     'fast': (255,69,0),
     'slow': (138,43,226),
     'good': (0,255,0),
-    'NG' : (255,0,0)
+    'NG' : (255,0,0),
+    'normal' : (0,0,0)
     }
 
 class VideoMetric():
@@ -135,6 +149,7 @@ class VideoMetric():
     def visual_back_color(self,frame, point_json, speed_metric, connect_point = connect_point_parts, info_dict = info_dict):
         '''
         keypoint -> numpy skeleton image
+        face 누락부분 수정_211221
         '''
         point = list(point_json.values())
         img = frame
@@ -144,6 +159,11 @@ class VideoMetric():
                 p = info_dict[parts[i]]
                 q = info_dict[parts[i+1]]
                 cv2.line(img, (int(point[p][0]*self.width), int(point[p][1]*self.height)), (int(point[q][0]*self.width), int(point[q][1]*self.height)), c, 3)
+        #211221 Face 그리기
+        for i in range(len(connect_point[-1])-1):
+            p = info_dict[connect_point[-1][i]]
+            q = info_dict[connect_point[-1][i+1]]
+            cv2.line(img, (int(point[p][0]*self.width), int(point[p][1]*self.height)), (int(point[q][0]*self.width), int(point[q][1]*self.height)), (0,0,0), 3)
         return img
 
 def l2_normalize(gt, target):
@@ -168,7 +188,7 @@ def coco_oks(gt, target, part):
         tx,ty = target[i][0],target[i][1]
         dx = gx-tx
         dy = gy-ty
-        kp_c = sigma[vec_part_key[part]][i]
+        kp_c = sigma[vec_part_key[part]]
         oks = np.exp(-(dx**2+dy**2)/(2*(kp_c**2)))
         output.append(oks)
     return np.average(output)

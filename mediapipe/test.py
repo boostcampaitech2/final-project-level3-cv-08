@@ -108,7 +108,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         
         
         # Score 추출
-        
         if len(json_archi)==20: del_true = True
 
         with open(f'save_json/hot_gt.mp4/{i+compare_frame:0>4}.json') as json_file:

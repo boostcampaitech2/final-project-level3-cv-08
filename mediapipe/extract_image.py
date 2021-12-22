@@ -7,6 +7,7 @@ import os
 import metric
 import config
 import argparse
+import matplotlib.pyplot as plt
 
 x0,y0,x1,y1 = 1e+9,1e+9,-1,-1
 
@@ -28,9 +29,9 @@ mp_holistic = mp.solutions.holistic
 mp_drawing_styles = mp.solutions.drawing_styles
 
 # 경로 설정
-key_path = "save_json"
+key_path = "save_image"
 video_path = "keypoints"
-target_video = "hot_prac2.mp4"
+target_video = "hot_prac.mp4"
 
 # video 정보 저장 파일 생성
 os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
@@ -45,6 +46,9 @@ video_inform = {
 }
 with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
     json.dump(video_inform, f, indent='\t')
+
+hot_prac = metric.VideoMetric(video_inform['frame_width'],video_inform['frame_height'])
+
 
 # Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -66,7 +70,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
         # Recolor back to BGR
         image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         # Extract landmarks
         try :
@@ -78,8 +82,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         # save keypoints
         keypoints = config.make_keypoints(landmarks, mp_pose, video_inform)
         
-        with open(os.path.join(key_path, target_video, f'{i:0>4}.json'), "w") as f:
-            json.dump(keypoints, f, indent='\t')
+        # with open(os.path.join(key_path, target_video, f'{i:0>4}.json'), "w") as f:
+        #     json.dump(keypoints, f, indent='\t')
             
         for x,y,z,k in list(keypoints.values())[:-1]:
             if x0>x: x0=x
@@ -92,13 +96,22 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         if y1>1: y1=1
         
         video_inform['gt_bbox'] = [x0,y0,x1,y1]
-        with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
-            json.dump(video_inform, f, indent='\t')
-            
+        # with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
+        #     json.dump(video_inform, f, indent='\t')
+        
         i=i+1
         
-        if i%1000==0:
+        eval_metric = ["normal"]*10
+        
+        prac_image = hot_prac.visual_back_color(image, keypoints, eval_metric)
+        
+        if 90<=i<=100:
+            plt.imsave(os.path.join(key_path, target_video, f'{i:0>4}.jpg'),prac_image)
+        
+        if i%10==0:
             print(i)
+        if i ==200:
+            break
         #'q'누르면 캠 꺼짐
         if cv2.waitKey(10) & 0xFF == ord("q"):
             break
