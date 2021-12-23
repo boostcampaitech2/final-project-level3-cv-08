@@ -202,7 +202,6 @@ def compare_video(music_name, sync_frame):
                         for g,p in zip(dtw_gt[s_f:s_f+compare_frame], dtw_prac):
                             for part, gg, pp in enumerate(zip(g,p)):
                                 dtw_temp.append(metric.coco_oks(gg, pp, part))
-                            np.array()
                     
             array = (np.zeros((gt_inform['frame_height'],gt_inform['frame_width'],3))+255).astype(np.uint8)
             prac_image = prac_video.visual_back_color(image, keypoints, eval_metric)
@@ -233,7 +232,7 @@ def compare_video(music_name, sync_frame):
         return eval_graph_x,eval_graph_y
     
 if __name__ == "__main__":      
-    eval_graph_x,eval_graph_y=compare_video('hotbb',sync_frame=15)
+    eval_graph_x,eval_graph_y=compare_video('hotbb')
     # print(len(eval_graph_x))
     # print(len(eval_graph_y[-1]))
     # print(len(eval_graph_y))

@@ -222,10 +222,7 @@ if __name__ == "__main__":
     # print(len(eval_graph_y[-1]))
     # print(len(eval_graph_y))
     plt.figure(figsize = (10,6), constrained_layout=True)
-    for i in range(11):
-        ax = plt.subplot(6,2,i+1) #)
-        plt.ylim(0,1)
-        sns.lineplot(x=eval_graph_x,y=eval_graph_y[i])
-        # print(len(eval_graph_y[i]))
-        ax.set_title(f"{small_name[i]}")
+    plt.ylim(0,1.1)
+    sns.lineplot(x=eval_graph_x,y=eval_graph_y[-1])
+    # print(len(eval_graph_y[i]))
     plt.savefig("result.png")
