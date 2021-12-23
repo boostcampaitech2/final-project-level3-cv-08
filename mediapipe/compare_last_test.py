@@ -78,8 +78,8 @@ def compare_video(music_name, sync_frame):
     # gt information 가져오기
     with open(os.path.join(key_path, gt_path, f'_info.json')) as json_file:
         gt_inform = json.load(json_file) # frame_width, frame_height, video_fps, total_frame, #gt_bbox
-        
-    imcolor = cv2.imread('colormap.jpg')
+    
+
 
     # gt_resize = (int(gt_inform['frame_width']*video_inform['frame_height']/gt_inform['frame_height']), video_inform['frame_height'])
     # gt_video = metric.VideoMetric(gt_resize[0],gt_resize[1])
@@ -88,14 +88,13 @@ def compare_video(music_name, sync_frame):
     prac_resize = (int(video_inform['frame_width']*gt_inform['frame_height']/video_inform['frame_height']), gt_inform['frame_height'])
     gt_video = metric.VideoMetric(gt_inform['frame_width'],gt_inform['frame_height'])
     prac_video = metric.VideoMetric(prac_resize[0],prac_resize[1])   
-    imcolorshape = imcolor.shape
-    imcolor = cv2.resize(imcolor,dsize=(int(imcolorshape[1]*gt_inform['frame_height']/2/imcolorshape[0]), int(gt_inform['frame_height']/2)))
-
+    
+    
     # print( gt_inform['video_fps'],video_inform['video_fps'],gt_inform['video_fps']/video_inform['video_fps'])
     # gt와 비교할 Frame 수 선정
     compare_frame = 15
     before_frame = 5
-    match_frame = gt_inform['video_fps'] /video_inform['video_fps']# 비디오 두 프레임이 다를 경우에 Sync를 맞춰줌
+    match_frame = gt_inform['video_fps']/video_inform['video_fps']# 비디오 두 프레임이 다를 경우에 Sync를 맞춰줌
     threshold = 0.2 # 위치 vector 평가 기준
     threshold_cs = 0.8 # 변위 vector Cosine Similarity 평가 기준
     accept_frame = 5 # OK 로 평가하는 Frame 수
@@ -104,7 +103,14 @@ def compare_video(music_name, sync_frame):
     eval_metric = ["normal"]*10  # 시작 후 compare_frame+before_frame 동안 평가 진행 X
     eval_graph_y = [[] for _ in range(11)]
     eval_graph_x = []
-    
+    dtw_temp = []
+    dtw_gt = []
+    dtw_prac = []
+    for j in range(0,gt_inform['video_fps']*3):
+        with open(os.path.join(key_path, gt_path,f'{j:0>4}.json')) as json_file:
+            dtw_gt_temp = json.load(json_file)
+        dtw_gt.append(gt_video.extract_vec_norm_by_small_part(dtw_gt_temp))
+        
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         i=0
         while cap.isOpened():
@@ -130,24 +136,23 @@ def compare_video(music_name, sync_frame):
             try :
                 landmarks = results.pose_landmarks.landmark
             except : 
-                i=i+1
                 continue
             
             keypoints = config.make_keypoints(landmarks, mp_pose, video_inform)
-            if len(prac_temp)>before_frame:
+            if len(prac_temp)>compare_frame:
                 prac_temp = prac_temp[1:]
             prac_temp.append(keypoints)
             
             with open(os.path.join(key_path, gt_path,f'{int(i*match_frame+sync_frame):0>4}.json')) as json_file:
                 gt_json = json.load(json_file)
             
-            if i%(compare_frame) == 0 :
+            if i%(compare_frame) == 0 and i>=gt_inform['video_fps']*3:
                 s_p = max(int(i*match_frame+sync_frame)-compare_frame,before_frame) # start point
                 e_p = min(int(i*match_frame+sync_frame)+compare_frame, gt_inform['total_frame']-1) # end point
 
                 # body part별로(왼다리, 오른다리, 왼팔, 오른팔, 몸통) normalize된 값 vector 추출
                 prac = prac_video.extract_vec_norm_by_small_part(keypoints)
-                prac_displace_prac = prac_video.extract_vec_norm_by_small_part_diff(prac_temp[0],keypoints)
+                prac_displace_prac = prac_video.extract_vec_norm_by_small_part_diff(prac_temp[i-before_frame],keypoints)
                     
                 total_eval = [[] for _ in range(len(prac)+1)]
                 total_eval_diff = [[] for _ in range(len(prac))]
@@ -186,7 +191,19 @@ def compare_video(music_name, sync_frame):
                                 else : eval_metric.append(best_point)#.append("good")
                             else :
                                 eval_metric.append("NG")
-
+                         
+            elif i < gt_inform['video_fps']*3 and i%(compare_frame) == 0:
+                if i >=compare_frame-1:
+                    dtw_prac=dtw_prac[1:]
+                    dtw_prac.append(gt_video.extract_vec_norm_by_small_part(dtw_gt_temp))
+                    
+                    for s_f in range(0,gt_inform['video_fps']*3-compare_frame):
+                        
+                        for g,p in zip(dtw_gt[s_f:s_f+compare_frame], dtw_prac):
+                            for part, gg, pp in enumerate(zip(g,p)):
+                                dtw_temp.append(metric.coco_oks(gg, pp, part))
+                            np.array()
+                    
             array = (np.zeros((gt_inform['frame_height'],gt_inform['frame_width'],3))+255).astype(np.uint8)
             prac_image = prac_video.visual_back_color(image, keypoints, eval_metric)
             gt_image = gt_video.visual_back_color(array, gt_json, eval_metric)
@@ -202,7 +219,6 @@ def compare_video(music_name, sync_frame):
             cTime = time.time()
             fps = 1 / (cTime - pTime)
             pTime = cTime
-            image[int(imcolor.shape[0]/2):int(imcolor.shape[0]/2)+imcolor.shape[0],50:50+imcolor.shape[1],:] = imcolor
             cv2.putText(image, str(int(fps)), (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 0), 3) # FPS 삽입
             cv2.putText(image, 'GT', (gt_inform['frame_width']//2-25, 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 3)
             i=i+1
@@ -217,7 +233,7 @@ def compare_video(music_name, sync_frame):
         return eval_graph_x,eval_graph_y
     
 if __name__ == "__main__":      
-    eval_graph_x,eval_graph_y=compare_video('hotbb',15)
+    eval_graph_x,eval_graph_y=compare_video('hotbb',sync_frame=15)
     # print(len(eval_graph_x))
     # print(len(eval_graph_y[-1]))
     # print(len(eval_graph_y))
