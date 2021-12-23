@@ -120,7 +120,7 @@ def compare_video(music_name, sync_frame):
                 prac_temp = prac_temp[1:]
             prac_temp.append(keypoints)
 
-            with open(os.path.join(key_path, gt_path,f'{int(i*match_frame+sync_frame):0>4}.json')) as json_file:
+            with open(os.path.join(key_path, gt_path,f'{max(int(i * match_frame + sync_frame),0):0>4}.json')) as json_file:
                 gt_json = json.load(json_file)
 
             if i % (compare_frame) == 0:
@@ -136,7 +136,7 @@ def compare_video(music_name, sync_frame):
                 for j in range(s_p, e_p, 1):
                     with open(os.path.join(key_path, gt_path, f'{j:0>4}.json')) as json_file:
                         gt_temp = json.load(json_file)
-                    with open(os.path.join(key_path, gt_path, f'{j - before_frame:0>4}.json')) as json_file:
+                    with open(os.path.join(key_path, gt_path, f'{j-before_frame:0>4}.json')) as json_file:
                         displace_gt_temp = json.load(json_file)
                     gt = gt_video.extract_vec_norm_by_small_part(gt_temp)
                     gt_displace_prac = prac_video.extract_vec_norm_by_small_part_diff(displace_gt_temp, gt_temp)
@@ -203,7 +203,7 @@ def compare_video(music_name, sync_frame):
             cv2.putText(image, 'GT', (gt_inform['frame_width'] // 2 - 25, 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 3)
             i = i + 1
 
-            cv2.imshow("Mediapipe Feed", image)
+            # cv2.imshow("Mediapipe Feed", image)
 
             FRAME_WINDOW.image(image)
             out.write(image)
