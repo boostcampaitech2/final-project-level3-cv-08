@@ -80,25 +80,41 @@ vec_part_key = ['left thigh',
                  'body1',
                  'body2']
 sigma = {
-        'left thigh':0.087,
-        'left calf':0.089,
-        'right thigh':0.087,
-        'right calf':0.089,
-        'left arm':0.072,
-        'left forearm':0.062,
-        'right arm':0.072,
-        'right forearm':0.062,
-        'body1':0.079,
-        'body2':0.079
+        'left thigh':0.8, #0.087, [1,3,5,7]
+        'left calf':0.9, #0.089,
+        'right thigh':0.8, #0.087,
+        'right calf':0.9, #0.089,
+        'left arm':0.8, #0.072,
+        'left forearm': 0.9, #0.1, #0.062
+        'right arm':0.8,  #0.072,
+        'right forearm': 0.9, #0.1, #0.062
+        'body1':0.8, #0.079,
+        'body2':0.8 #0.079
 }
 
-color_map = {
-    'fast': (255,69,0),
-    'slow': (138,43,226),
-    'good': (0,255,0),
-    'NG' : (255,0,0),
-    'normal' : (0,0,0)
-    }
+def color_map(speed, compare_frame=15):
+    if speed =="NG": return (0,0,255)
+    if speed =="normal": return (0,0,0)
+    R_s = np.linspace(70, 51, num=compare_frame, endpoint=True, retstep=False, dtype=np.uint8)
+    G_s = np.linspace(133, 102, num=compare_frame, endpoint=True, retstep=False, dtype=np.uint8)
+    B_s = np.linspace(20, 255, num=compare_frame, endpoint=True, retstep=False, dtype=np.uint8)
+    R_f = np.linspace(51, 30, num=compare_frame, endpoint=False, retstep=False, dtype=np.uint8)
+    G_f = np.linspace(102, 80, num=compare_frame, endpoint=False, retstep=False, dtype=np.uint8)
+    B_f = np.linspace(255, 200, num=compare_frame, endpoint=False, retstep=False, dtype=np.uint8)
+
+
+    red = list(np.concatenate((R_s,R_f)))
+    green = list(np.concatenate((G_s,G_f)))
+    blue = list(np.concatenate((B_s,B_f)))
+    return (int(blue[speed]),int(green[speed]),int(red[speed]))
+
+# color_map = {
+#     'fast': (0,0,0),#(255,204,000),
+#     'slow': (0,0,0),#(000,51,255),
+#     'good': (0,255,0),#(0,255,0),
+#     'NG' : (0,0,255),
+#     'normal' : (0,0,0)
+#     }
 
 class VideoMetric():
     def __init__(self, width, height):
@@ -154,7 +170,7 @@ class VideoMetric():
         point = list(point_json.values())
         img = frame
         for i, parts in enumerate(connect_point[:-1]):
-            c = color_map[speed_metric[i]]
+            c = color_map(speed_metric[i])
             for i in range(len(parts)-1):
                 p = info_dict[parts[i]]
                 q = info_dict[parts[i+1]]

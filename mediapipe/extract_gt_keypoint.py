@@ -7,6 +7,7 @@ import os
 import metric
 import config
 import argparse
+import math
 
 x0,y0,x1,y1 = 1e+9,1e+9,-1,-1
 
@@ -40,7 +41,7 @@ cap = cv2.VideoCapture(os.path.join(video_path, target_video))
 video_inform = {
     'frame_width' : int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
     'frame_height' : int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-    'video_fps' : int(cap.get(cv2.CAP_PROP_FPS)),
+    'video_fps' : cap.get(cv2.CAP_PROP_FPS),
     'total_frame' : int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 }
 with open(os.path.join(key_path, target_video, f'_info.json'), "w") as f:
