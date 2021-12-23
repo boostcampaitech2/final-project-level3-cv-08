@@ -1,4 +1,4 @@
-import pyautogui
+# import pyautogui
 
 def make_keypoints(landmarks, mp_pose, video_inform):
     left_hip = [
@@ -124,16 +124,16 @@ def make_keypoints(landmarks, mp_pose, video_inform):
         "28. right_ear": right_ear,
         "time stamp": video_inform['video_fps'],
     }
-
-def click_video():
-    pyautogui.keyDown('shift')
-    pyautogui.keyDown('tab')
-    pyautogui.keyDown('tab')
-    pyautogui.keyDown('tab')
-    pyautogui.keyDown('tab')
-    pyautogui.keyDown('tab')
-    pyautogui.keyDown('tab')
-    pyautogui.keyUp('shift')
-    pyautogui.keyUp('tab')
-    pyautogui.keyDown('space')
-    pyautogui.keyUp('space')
+#
+# def click_video():
+#     pyautogui.keyDown('shift')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyDown('tab')
+#     pyautogui.keyUp('shift')
+#     pyautogui.keyUp('tab')
+#     pyautogui.keyDown('space')
+#     pyautogui.keyUp('space')

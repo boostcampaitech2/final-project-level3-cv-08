@@ -7,12 +7,8 @@ import time
 import pandas as pd
 import numpy as np
 from webcam import webcam_pose
-from config import click_video
+# from config import click_video
 from compare import compare_video
-
-url = 'http://fastapi:8000'
-endpoint = '/app'
-
 
 UPLOAD = 'upload video'
 WEBCAM = 'filmed with webcam'
@@ -27,10 +23,11 @@ def show_video(music_name):
 
 #비디오 업로드 후 폴더에 저장
 def upload_video(music_name):
+    sync_frame = st.sidebar.slider("Sync", -30, 30, 10, 5)
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
         g = io.BytesIO(uploaded_file.read())
-        temporary_location = "./dataset/target/" + music_name + "_tg.mp4"
+        temporary_location = "./dataset/target/" + music_name + "_prac.mp4"
 
         with open(temporary_location, 'wb') as out:
             out.write(g.read())
@@ -39,8 +36,8 @@ def upload_video(music_name):
         # 업로드 완료되면 평가받기
         with st.container():
             with st.spinner('Wait...'):
-                compare_video()
-                time.sleep(30)
+                compare_video(music_name, sync_frame)
+                # time.sleep(30)
                 # st.header("당신의 댄스 실력은")
                 # video_file = open('./dataset/result/' + music_name + '.mp4', 'rb')
                 # video_bytes = video_file.read()
@@ -48,18 +45,23 @@ def upload_video(music_name):
 
 #웹탬으로 촬영 후 폴더 에 저장
 def upload_webcam(music_name):
-    run = st.checkbox('Start/Stop Webcam')
+    sync_frame = st.sidebar.slider("Sync", -30, 30, 10, 5)
+    # run = st.checkbox('Start/Stop Webcam')
+    col1, col2 = st.columns(2)
+    start = col1.button("start")
+    finish = col2.button("finish")
     # Webcam mediapipe랑 같이 돌리기
     # webcam_pose(run, music_name)
-    if run:
-        click_video()
+    if start:
+        # click_video()
         FRAME_WINDOW = st.image([])
         camera = cv2.VideoCapture(0)
         fourcc = cv2.VideoWriter_fourcc(*'DIVX')
         fps = camera.get(cv2.CAP_PROP_FPS)
-        out = cv2.VideoWriter("./dataset/target/" + music_name + "_gt.mp4", fourcc, fps, (640, 480))
+        out = cv2.VideoWriter("./dataset/target/" + music_name + "_prac.mp4", fourcc, fps, (640, 480))
 
         while (camera.isOpened()):
+            flag = 1
             ret, frame = camera.read()
             out.write(frame)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -67,6 +69,12 @@ def upload_webcam(music_name):
 
         camera.release()
         out.release()
+
+    if finish:
+        with st.container():
+            with st.spinner('Wait...'):
+                compare_video(music_name, sync_frame)
+
 
 def main():
     st.set_page_config(layout="wide")
