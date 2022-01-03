@@ -15,7 +15,8 @@ video_path = "keypoints"
 target_video = "hot_prac.mp4"
 
 cap = cv2.VideoCapture(os.path.join(video_path, target_video))
-# cap = cv2.VideoCapture(0)
+
+
 os.makedirs(os.path.join(key_path, target_video), exist_ok=True)
 
 # Curl counter variables
