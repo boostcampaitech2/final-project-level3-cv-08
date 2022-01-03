@@ -98,7 +98,7 @@ def compare_video(music_name, sync_frame):
     match_frame = gt_inform['video_fps'] /video_inform['video_fps']# 비디오 두 프레임이 다를 경우에 Sync를 맞춰줌
     threshold = 0.2 # 위치 vector 평가 기준
     threshold_cs = 0.8 # 변위 vector Cosine Similarity 평가 기준
-    accept_frame = 5 # OK 로 평가하는 Frame 수
+    accept_frame = 10 # OK 로 평가하는 Frame 수
     sync_frame = sync_frame # Sync를 위한 frame
     prac_temp = []
     eval_metric = ["normal"]*10  # 시작 후 compare_frame+before_frame 동안 평가 진행 X
@@ -217,7 +217,7 @@ def compare_video(music_name, sync_frame):
         return eval_graph_x,eval_graph_y
     
 if __name__ == "__main__":      
-    eval_graph_x,eval_graph_y=compare_video('hotbb',15)
+    eval_graph_x,eval_graph_y=compare_video('hotbb',20)
     # print(len(eval_graph_x))
     # print(len(eval_graph_y[-1]))
     # print(len(eval_graph_y))
